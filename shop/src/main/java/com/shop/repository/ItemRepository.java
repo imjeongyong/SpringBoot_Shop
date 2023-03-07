@@ -10,7 +10,7 @@ import java.util.List;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 public interface ItemRepository extends JpaRepository<Item, Long>,
-        QuerydslPredicateExecutor<Item> {
+        QuerydslPredicateExecutor<Item>, ItemRepositoryCustom {
 
     List<Item> findByItemNm(String itemNm);
 
