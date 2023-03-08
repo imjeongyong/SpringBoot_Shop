@@ -35,7 +35,7 @@ public class OrderService {
 
     private final ItemImgRepository itemImgRepository;
 
-    public Long order(OrderDto orderDto, String email) {
+    public Long order(OrderDto orderDto, String email){
 
         Item item = itemRepository.findById(orderDto.getItemId())
                 .orElseThrow(EntityNotFoundException::new);
@@ -77,26 +77,26 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public boolean validateOrder(Long orderId, String email) {
+    public boolean validateOrder(Long orderId, String email){
         Member curMember = memberRepository.findByEmail(email);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(EntityNotFoundException::new);
         Member savedMember = order.getMember();
 
-        if (!StringUtils.equals(curMember.getEmail(), savedMember.getEmail())) {
+        if(!StringUtils.equals(curMember.getEmail(), savedMember.getEmail())){
             return false;
         }
 
         return true;
     }
 
-    public void cancelOrder(Long orderId) {
+    public void cancelOrder(Long orderId){
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(EntityNotFoundException::new);
         order.cancelOrder();
     }
 
-    public Long orders(List<OrderDto> orderDtoList, String email) {
+    public Long orders(List<OrderDto> orderDtoList, String email){
 
         Member member = memberRepository.findByEmail(email);
         List<OrderItem> orderItemList = new ArrayList<>();
@@ -105,12 +105,14 @@ public class OrderService {
             Item item = itemRepository.findById(orderDto.getItemId())
                     .orElseThrow(EntityNotFoundException::new);
 
-            OrderItem orderItem =
-                    OrderItem.createOrderItem(item, orderDto.getCount());
+            OrderItem orderItem = OrderItem.createOrderItem(item, orderDto.getCount());
             orderItemList.add(orderItem);
         }
 
         Order order = Order.createOrder(member, orderItemList);
+        orderRepository.save(order);
+
         return order.getId();
     }
+
 }

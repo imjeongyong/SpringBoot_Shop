@@ -1,9 +1,6 @@
 package com.shop.service;
 
-import com.shop.dto.CartDetailDto;
 import com.shop.dto.CartItemDto;
-import com.shop.dto.CartOrderDto;
-import com.shop.dto.OrderDto;
 import com.shop.entity.Cart;
 import com.shop.entity.CartItem;
 import com.shop.entity.Item;
@@ -13,14 +10,19 @@ import com.shop.repository.CartRepository;
 import com.shop.repository.ItemRepository;
 import com.shop.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.util.StringUtils;
 
 import javax.persistence.EntityNotFoundException;
+
+import com.shop.dto.CartDetailDto;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.thymeleaf.util.StringUtils;
+import com.shop.dto.CartOrderDto;
+import com.shop.dto.OrderDto;
 
 @Service
 @RequiredArgsConstructor
@@ -45,15 +47,13 @@ public class CartService {
             cartRepository.save(cart);
         }
 
-        CartItem savedCartItem =
-                cartItemRepository.findByIdAndItemId(cart.getId(), item.getId());
+        CartItem savedCartItem = cartItemRepository.findByCartIdAndItemId(cart.getId(), item.getId());
 
         if (savedCartItem != null) {
             savedCartItem.addCount(cartItemDto.getCount());
             return savedCartItem.getId();
         } else {
-            CartItem cartItem =
-                    CartItem.createCartItem(cart, item, cartItemDto.getCount());
+            CartItem cartItem = CartItem.createCartItem(cart, item, cartItemDto.getCount());
             cartItemRepository.save(cartItem);
             return cartItem.getId();
         }
@@ -70,9 +70,7 @@ public class CartService {
             return cartDetailDtoList;
         }
 
-        cartDetailDtoList =
-                cartItemRepository.findCartDetailDtoList(cart.getId());
-
+        cartDetailDtoList = cartItemRepository.findCartDetailDtoList(cart.getId());
         return cartDetailDtoList;
     }
 
@@ -86,6 +84,7 @@ public class CartService {
         if (!StringUtils.equals(curMember.getEmail(), savedMember.getEmail())) {
             return false;
         }
+
         return true;
     }
 
@@ -104,6 +103,7 @@ public class CartService {
 
     public Long orderCartItem(List<CartOrderDto> cartOrderDtoList, String email) {
         List<OrderDto> orderDtoList = new ArrayList<>();
+
         for (CartOrderDto cartOrderDto : cartOrderDtoList) {
             CartItem cartItem = cartItemRepository
                     .findById(cartOrderDto.getCartItemId())
@@ -116,13 +116,14 @@ public class CartService {
         }
 
         Long orderId = orderService.orders(orderDtoList, email);
-
         for (CartOrderDto cartOrderDto : cartOrderDtoList) {
             CartItem cartItem = cartItemRepository
                     .findById(cartOrderDto.getCartItemId())
                     .orElseThrow(EntityNotFoundException::new);
             cartItemRepository.delete(cartItem);
         }
+
         return orderId;
     }
+
 }
